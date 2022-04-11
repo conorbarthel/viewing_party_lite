@@ -1,8 +1,7 @@
-class MoviesController < ApplicationController
-  before_action :save_movie, only: [:show]
+class Users::MoviesController < ApplicationController
 
   def show
-    @user = User.find(params[:user_id])
+    @user = current_user
     if params[:results] == 'true'
       @movie = MovieFacade.get_movie(params[:id])
       @cast = MovieFacade.get_10_cast(@movie.api_id)
@@ -16,7 +15,7 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @user = User.find(params[:user_id])
+    @user = current_user
     if params[:q] == 'top%20rated'
       @results = MovieFacade.top_twenty
     else
@@ -24,12 +23,4 @@ class MoviesController < ApplicationController
       @search = params[:search]
     end
   end
-
-  private
-
-    def save_movie
-      if Movie.find_by('api_id = ?', params[:id]) == nil
-        Movie.create!(api_id: params[:id])
-      end
-    end
 end

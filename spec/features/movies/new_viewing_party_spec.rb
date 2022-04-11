@@ -2,25 +2,32 @@ require 'rails_helper'
 
 RSpec.describe 'new viewing party page' do
   before(:each) do
-    @user = User.create!(name: 'Kat', email: 'kat@yahoo.com')
-    @user2 = User.create!(name: 'G', email: 'g@gmail.com')
-
-    @movie = @movie_2 = Movie.create!(api_id: 650)
+    User.destroy_all
+    @user = User.create!(name: 'Kat', email: 'kat@yahoo.com', password:"2", password_confirmation:"2")
+    visit login_path(@user)
+    fill_in "Email", with:"#{@user.email}"
+    fill_in "Password", with:"#{@user.password}"
+    click_on "Login"
   end
 
   describe 'new viewing party' do
     VCR.use_cassette('boyz_n_the_hood') do
       it "has a button to create new party" do
-        visit user_movie_path(@user, @movie)
-
+        visit users_discover_index_path
+        fill_in "Search", with: "boyz"
+        click_on 'Find Movies'
+        click_on 'Boyz n the Hood'
         within "div.button" do
           expect(page).to have_button("Create Viewing Party for Boyz n the Hood")
         end
       end
 
       it "takes you to a form to create new party" do
-        visit user_movie_viewing_party_new_path(@user, @movie.api_id)
-        expect(current_path).to eq(user_movie_viewing_party_new_path(@user, @movie.api_id))
+        visit users_discover_index_path
+        fill_in "Search", with: "boyz"
+        click_on 'Find Movies'
+        click_on 'Boyz n the Hood'
+        click_on "Create Viewing Party for Boyz n the Hood"
 
         within "div.form" do
           expect(page).to have_content('Movie Title: Boyz n the Hood')
@@ -32,8 +39,11 @@ RSpec.describe 'new viewing party page' do
       end
 
       it "fills in a form and creates that party" do
-        visit user_movie_viewing_party_new_path(@user, @movie.api_id)
-        expect(current_path).to eq(user_movie_viewing_party_new_path(@user, @movie.api_id))
+        visit users_discover_index_path
+        fill_in "Search", with: "boyz"
+        click_on 'Find Movies'
+        click_on 'Boyz n the Hood'
+        click_on "Create Viewing Party for Boyz n the Hood"
 
         within "div.form" do
           fill_in :date, with: Date.today.strftime('%Y-%m-%d')
@@ -41,10 +51,10 @@ RSpec.describe 'new viewing party page' do
           click_on "Create Party"
         end
 
-        expect(current_path).to eq(user_path(@user))
-
+        expect(current_path).to eq(dashboard_path)
+        @date = Time.now
         expect(page).to have_content("Boyz n the Hood")
-        expect(page).to have_content("Monday, March 28, 2022")
+        expect(page).to have_content("#{@date.strftime("%A, %B %d, %Y")}")
         expect(page).to have_content("Hosting")
       end
     end

@@ -9,7 +9,8 @@ RSpec.describe 'Login Page' do
       visit '/login'
       fill_in 'Email', with:'first_email@gmail.com'
       fill_in 'Password', with: "1"
-      expect(current_path).to eq(user_path(@user1))
+      click_on 'Login'
+      expect(current_path).to eq(dashboard_path)
     end
   end
 end

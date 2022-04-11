@@ -9,7 +9,8 @@ class UsersController < ApplicationController
   def create
     user = User.create(user_params)
     if user.id != nil
-      redirect_to user_path(user)
+      redirect_to dashboard_path
+      session[:user_id] = user.id
     else
       redirect_to register_path
       flash[:alert] = "#{user.errors.full_messages.to_sentence}"
@@ -21,8 +22,14 @@ class UsersController < ApplicationController
   def login_form;end
 
   def login_user
-    binding.pry
     user = User.find_by(email: params[:email])
+    if user.authenticate(params[:password])
+      redirect_to dashboard_path
+      session[:user_id] = user.id
+    else
+      flash[:error]="Wrong password"
+      render :login_form
+    end
   end
 
   private
@@ -31,7 +38,7 @@ class UsersController < ApplicationController
     end
 
     def set_user
-      @user = User.find(params[:id])
+      @user = current_user
     end
 
     def set_parties
